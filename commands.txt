@@ -1,0 +1,10 @@
+#creare un keystore
+keytool --genkey -keyalg RSA -alias self-signed-cert -keystore keystore -storepass P@ssw0rd -validity 365 -keysize 2048
+#export certificate from previous created keystore
+keytool -export -keystore keystore -alias self-signed-cert -file keystore.cer
+#show keystore informations
+keytool -list -v -keystore keystore
+#import certificate in a trust-store
+keytool -import -file keystore.cer -alias keystore -keystore trust-store
+#show trust-store informations
+keytool -list -v -keystore trust-store
