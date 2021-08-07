@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Collections;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -14,12 +15,18 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 public class SSLDemoController {
 
+	@Autowired 
+	private RestTemplate restTemplateWithTrustStore;
+	
 	@GetMapping("/ping")
 	public String ping() { 
 		return "pong";
@@ -49,8 +56,10 @@ public class SSLDemoController {
 	@GetMapping("/tacos")
 	public String tacos() throws UnsupportedOperationException, IOException { 
 		SSLSocketFactory  sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		
 		URL url = new URL("https://localhost:8443/tacos");
 		HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+		
 		conn.setDefaultHostnameVerifier(new HostnameVerifier() {
 
 			@Override
@@ -73,5 +82,13 @@ public class SSLDemoController {
 			result.append(line);
 		}
 		return result.toString();
+	}
+	
+	@GetMapping("/tacosInternalTrustStore")
+	public ResponseEntity<String> tacosInternalTrustStore() throws UnsupportedOperationException, IOException { 
+		ResponseEntity<String> response = restTemplateWithTrustStore
+		        .getForEntity("https://localhost:8443/tacos", String.class, Collections.emptyMap());
+		return response;
+
 	}
 }
